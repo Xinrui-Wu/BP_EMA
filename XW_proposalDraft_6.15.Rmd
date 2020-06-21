@@ -1,0 +1,165 @@
+---
+title: "Proposal Draft"
+author: "Xinrui Wu"
+date: "6/15/2020"
+output: 
+  pdf_document:
+    fig_caption: yes
+    fig_width: 6 
+    fig_height: 4
+    number_sections: true
+    keep_tex: yes
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE)
+```
+
+\renewcommand{\arraystretch}{1.5}
+
+# Data description
+
+In this project, we will be using 2 datasets, the BP dataset and the EMA dataset.
+
+The experiments where the datasets came from mainly contained 2 parts. On one hand, each observation was provided with a device and was supposed to press the button on it when feeling stressful or having suicidal tendency.  On the other hand, during the experiment, each observation received surveys for testing their suicidal tendency several times a day and might choose to finish some of them.
+
+The BP dataset contains when observations pressed the button and their duration of participation in the experiment.  Each entry in the data explains the messages of one press of an observation and there are 3 variables in the data :
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c}
+\hline
+Variable name & Description                                      \\ \hline \hline
+ID            & The identification number of the observation     \\ \hline
+timestamp     & The date and time of the press                   \\ \hline
+run.time      & The participant duration of the observation until this press \\ \hline
+\end{tabular}
+\caption{Variables in the BP data}
+\label{table1}
+\end{table}
+
+
+The EMA dataset shows the answers and the messages of the surveys taken by observations. Each entry in the data represents one survey information and we will be using 4 variables in the data:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c}
+\hline
+Variable name & Description                                      \\ \hline \hline
+ID            & The identification number of the observation      \\ \hline
+timestamp     & The date and time when the survey was taken       \\ \hline
+run.time      & The participant duration of the observation until this survey \\ \hline
+sitb si sum   & The score of suicidal risk measured by the  survey \\ \hline
+\end{tabular}
+\caption{Variables in the EMA data}
+\label{table2}
+\end{table}
+
+\newpage
+# Problem and Data cleaning
+
+Since for the observations, the surveys could remind them of the experiment, it is reasonable to suppose that observations tended to press the button more frequently   after taking a survey than before that survey.
+
+So we are aiming to investigate the difference between the number of presses before and after a survey, as well as how the difference was influenced by the suicidal score and the duration of the experiment.
+
+Based on these problem, we cleaned the data and constructed a new dataset “EMA with press” in the following steps.
+
+For each survey taken by an observation, in other words, for each entry in the EMA dataset, we count the number of button presses by that observation k hours (the time window) before and after the survey respectively.
+
+Since there were surveys taken through out a day and the closest 2 surveys taken by the same observation were within 1 hour, as long as we set the length of the time window $k>1$, chances are that there could be presses falling in time windows of more than 1 survey. Here for those presses, we count it in the time window of its  closest survey. 
+
+For instance, if $k = 2$ and a press by observation X was 1 hour before a survey A taken by X and 1.5 hours after another survey B taken by X, we count the press as it was in the time window before survey A.
+
+Besides, the suicidal scores were missing only in 3 surveys, so we simply delete those 3 entries in the new dataset “EMA with press”.
+
+Thus there are 963 entries, 6 variables as follows in the new dataset:
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c}
+\hline
+Variable name & Description                                      \\ \hline \hline
+ID            & The identification number of the observation      \\ \hline
+timestamp     & The date and time when the survey was taken       \\ \hline
+run.time      & The participant duration of the observation until this survey \\ \hline
+sitb si sum   & The score of suicidal risk measured by the  survey \\ \hline
+pre-press     & The number of of button presses k hours before the survey \\ \hline
+post-press    & The number of of button presses k hours after the survey  \\ \hline
+\end{tabular}
+\caption{Variables in the "EMA with press" data}
+\label{table3}
+\end{table}
+
+
+\newpage
+# Data analysis
+In this section, we choose the time interval as $k = 3$ for enough samples.
+
+## Exploratory data analysis
+Although we choose a relatively large time window in order to get enough presses around each survey, there are still more than 800 entries without any presses before or after that survey, which could conceal the differences in other entries. So we first ignore those entries and consider the remaining 137 entries.
+
+Comparing pre-presses and post-presses, as is shown in Figure 1, we find that the mean number of post-presses is larger than that of pre-presses. Meanwhile, Figure 2 shows that the mean difference of post-presses and pre-presses for the same survey is larger than 0. Thus it seems that there tend to be more post-presses than pre-presses.
+
+\begin{figure}[h]
+\label{fig:1}
+\centering
+\includegraphics[width=4.5in]{box_3.png}
+\caption{Pre-presses and Post-presses}
+\end{figure}
+
+\begin{figure}[h]
+\label{fig:2}
+\centering
+\includegraphics[width=4.5in]{box_diff_3.png}
+\caption{Difference of Post-presses and Pre-presses}
+\end{figure}
+
+
+However, the results from t-tests do not support this conclusion. The p values of paired t-test and two-sample t-test are 0.21 and 0.24 respectively. So we tend to believe that in the whole dataset, the difference between pre-presses and post-presses is not significant.
+
+Then we expect that the suicidal score (SI score) would affect the difference of post-presses and pre-presses. 
+
+The SI scores are integers in [0, 27], where higher SI scores reflect higher suicidal tendency.
+
+
+\begin{figure}[h]
+\label{fig:3}
+\centering
+\includegraphics[width=6in, height=4in]{hist.png}
+\caption{Distribution of the SI score}
+\end{figure}
+
+As is shown in Figure 3,  the scores are naturally separated by 4 and 17. So we separate the data to 3 subsets where their SI scores lie in  [0, 3], [4, 16], [17, 27] respectively and compare pre-presses and post-presse for each subset. The result is shown in Figure 4 and Table 4.
+
+
+\begin{figure}[h]
+\label{fig:4}
+\centering
+\includegraphics[width=7in, height=4in]{box_si_3.png}
+\caption{Post-presses and Pre-presses in subsets by SI score}
+\end{figure}
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+SI score     & Entries & Mean pre-presses & Mean post-presses & p value (paired) & p value (2 sample) \\ \hline \hline
+{[}0, 3{]}   & 21      & 0.62             & 0.52              & 0.70             & 0.61               \\ \hline
+{[}4, 16{]}  & 86      & 0.88             & 1.08              & 0.47             & 0.43               \\ \hline
+{[}17, 27{]} & 30      & 0.83             & 1.47              & 0.15             & 0.10                \\ \hline
+\end{tabular}
+\caption{Compare presses in subsets by SI score}
+\label{table4}
+\end{table}
+
+We can see that pre-presses and post-presses are similar in the first subset since here observations have smaller SI scores and hardly press the button. As the SI score grows, the difference becomes more significant and when SI score exceeds 17, the difference is more significant than that in the whole dataset.
+
+
+
+\clearpage
+## Model fitting
+[To be finished]
+
+
+# Sensitivity analyses
