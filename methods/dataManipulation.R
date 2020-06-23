@@ -3,6 +3,7 @@
 
 # Main function: BPEMA
 # Assist function: press_count
+# Draw boxplot for the output data from BPEMA: plotBPEMA
 
 
 press_count = function(bp, ema, id, k){
