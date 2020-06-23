@@ -1,0 +1,112 @@
+---
+title: "Report_6.23"
+author: "Xinrui Wu"
+date: "6/23/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r library, include=FALSE}
+library(splines)
+```
+
+## 1. Function for data manipulation and simple boxplot
+
+The code is in the file "dataManipulation.R" on https://github.com/Xinrui-Wu/BP_EMA/tree/master/methods.
+
+Example of using the code to clean the data and draw the plot:
+
+Set time windows = 0.5, 1, 2, 3, 5
+```{r 1data, echo=TRUE}
+blake = readRDS('../rawdata/Blake_EMA.RDS')
+bh = readRDS('../rawdata/BH_SI.RDS')
+
+source('../methods/dataManipulation.R')
+
+time.window = c(0.5, 1, 2, 3, 5)
+n_win = length(time.window)
+
+bp_ema = BPEMA(bh, blake, time.window, returnPlot = 0)
+```
+
+```{r 1cleaned, echo=TRUE}
+head(bp_ema, 5)
+```
+
+```{r 1plot, echo=TRUE}
+plot_BPEMA(bp_ema, time.window)
+```
+
+## 2. Fitting models
+
+The corresponding code is in the file "model.R" on https://github.com/Xinrui-Wu/BP_EMA/tree/master/methods, where I didn't write the the steps in one or a series of functions since this was only a try. 
+
+I fitted the following 5 kinds of models for 5 windows time.window = (0.5, 1, 2, 3, 5) respectively, and test whether parameters corresponding to $1_{\{k=1\}}$ ("post-survey") are significantly non-zero .
+
+(1) M1 (without SI covariate): $log(\lambda) = \beta_{0} + \beta_{1} 1_{\{k=1\}}$ , \newline
+(2) M2 (truncated SI covariate): $log(\lambda) = \beta_{0} + \beta_{1} 1_{\{k=1\}} + \beta_{2} Truncate(SI) +  \beta_{3} Truncate(SI)1_{\{k=1\}}$, \newline
+where Truncate(SI) is a categorical variable
+$$
+Truncate(SI)=\left\{
+\begin{aligned}
+1 , & \quad SI \in [0,3], \\ 
+2 , &\quad SI \in [4,16], \\
+3 , &\quad SI \in [17,27].
+\end{aligned}
+\right.
+$$
+
+(3) M3 (linear SI covariate): $log(\lambda) = \beta_{0} + \beta_{1}\times 1_{\{k=1\}} + \beta_{2} \times SI +  \beta_{3} \times SI \times 1_{\{k=1\}}$, \newline
+
+(4) M4 (quadratic SI covariate): $log(\lambda) \sim 1_{\{k=1\}} * SI +  1_{\{k=1\}} * SI^2$. \newline
+
+(5) M5 (B-splined SI covariate): $log(\lambda) \sim 1_{\{k=1\}} * bs(SI)$, \newline
+
+
+For all the 5 models at time.window = (0.5, 1, 2), we cannot refuse the null hypothesis in the tests with form "$H_0: \beta = 0 \quad v.s. \quad H_1: \beta \neq 0$", where $\beta$ is any parameter corresponding to $1_{\{k=1\}}$. \newline
+
+```{r 2, echo=FALSE}
+bp_ema_long = as.data.frame(rbind(as.matrix(bp_ema[,c(1,5, seq(from = 7, to = 5+2*n_win, by = 2))]), 
+                                  as.matrix(bp_ema[,c(1,5, seq(from = 8, to = 6+2*n_win, by = 2))])))
+colnames(bp_ema_long) = c("ID", "si_score", paste("k.", time.window, sep = ""))
+bp_ema_long = mutate(bp_ema_long, post = c(rep(0, dim(bp_ema)[1]), rep(1, dim(bp_ema)[1]))) 
+
+# m1: without covariate
+m1.3 = glm(k.3 ~ post, data = bp_ema_long, family = "poisson")
+
+# m2: with si_score -- truncate
+truncateSI = function(si){
+  result = 1*(0<=si & si<=3) +
+    2*(4<=si & si<=16) +
+    3*(17<=si & si<=27)
+  return(as.factor(result))
+}
+m2.3 = glm(k.3 ~ post*truncateSI(si_score), data = bp_ema_long, family = "poisson")
+
+# m3: with si_score -- linear
+m3.3 = glm(k.3 ~ post*si_score, data = bp_ema_long, family = "poisson")
+
+# m4: with si_score -- quadratic
+quadraticSI = function(si){return(si^2)}
+m4.3 = glm(k.3 ~ post*si_score + post*quadraticSI(si_score), data = bp_ema_long, family = "poisson")
+
+# m5: with si_score -- B-spline
+m5.3 = glm(k.3 ~ post*bs(si_score, df = 3), data = bp_ema_long, family = "poisson")
+```
+
+However, if time.window = 3, we **refuse $\beta_1 = 0$ in Model 1** and some parameters corresponding to the interaction of SI and $1_{\{k=1\}}$ are **significantly non-zero in Model 3 and Model 5**. But we tend to believe all parameters corresponding to $1_{\{k=1\}}$ are **0 in Model 2 and Model 4**. \newline
+
+Results for time.window = 5 are similar with that for time.window = 3.\newline
+
+
+
+
+
+
+
+
+
+
