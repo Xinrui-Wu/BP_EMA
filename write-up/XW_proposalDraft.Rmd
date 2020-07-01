@@ -1,0 +1,213 @@
+---
+title: "Proposal Draft"
+author: "Xinrui Wu"
+date: "6/29/2020"
+output: 
+  pdf_document:
+    fig_caption: yes
+    fig_width: 6 
+    fig_height: 4
+    number_sections: true
+    keep_tex: yes
+fontsize: 11pt
+geometry: margin=1in
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE)
+```
+
+\renewcommand{\arraystretch}{1.5}
+
+# Data description
+
+This project is based on an experiment containing 2 datasets, the BP dataset and the EMA dataset.
+
+On one hand, each observation was provided with a device and was supposed to press the button on it when feeling stressful or having suicidal tendency.  On the other hand, during the experiment, each observation received surveys for testing their suicidal tendency several times a day and might choose to finish some of them.
+
+The BP dataset contains when observations pressed the button and their duration of participation in the experiment.  Each entry in the data explains the messages of one press of an observation and there are 3 variables in the data :
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c}
+\hline
+Variable name & Description                                      \\ \hline \hline
+ID            & The identification number of the observation     \\ \hline
+timestamp     & The date and time of the press                   \\ \hline
+run.time      & The participant duration of the observation until this press \\ \hline
+\end{tabular}
+\caption{Variables in the BP data}
+\label{table1}
+\end{table}
+
+
+The EMA dataset shows the answers and the messages of the surveys taken by observations. Each entry in the data represents one survey information and we will be using 4 variables in the data:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c}
+\hline
+Variable name & Description                                      \\ \hline \hline
+ID            & The identification number of the observation      \\ \hline
+timestamp     & The date and time when the survey was taken       \\ \hline
+run.time      & The participant duration of the observation until this survey \\ \hline
+sitb si sum   & The score of suicidal risk measured by the  survey \\ \hline
+\end{tabular}
+\caption{Variables in the EMA data}
+\label{table2}
+\end{table}
+
+\newpage
+# Problem and Data cleaning process
+
+## Main purpose
+
+Since for the observations, the surveys could remind them of the experiment, it is reasonable to suppose that observations tended to press the button more  after taking a test than before that test.
+
+So we are aiming to investigate the difference between the number of presses before a test and after that test  by modeling the presses with SI scores and whether it is after a survey.
+
+This can help us estimate people’s SI score with their button presses without sending them surveys:
+
+If we regard the survey as a treatment X whose value is the SI score, Y(0) and Y(1) are the button presses in a time window k when the observation doesn’t take and takes the survey respectively, then we can estimate $E\left[ Y(1)|X=x \right]$ directly from the data collected in the experiment, while $E\left[ Y(0)|X=x \right]$ is unobservable since if the observation doesn’t take the survey we cannot know the SI score.
+
+However, if we assume a person’s suicidal tendency (the SI score) could remain constant in a short period of time, then by setting proper time window, we can treat the presses before a survey as $Y(0)$. In this way, by modeling the difference between the number of presses before a test and after that test, we can model the causal effect of the treatment and thus estimate $E\left[ Y(0)|X=x \right]$.
+
+
+## Data cleaning
+
+Based on these problem, we cleaned the data and constructed a new dataset “bp_ema” in the following steps. (The data cleaning process can be accomplished by the functions in the file https://github.com/Xinrui-Wu/BP_EMA/blob/master/methods/dataManipulation.R)
+
+Firstly, we set a vector of m time windows. For each time window k, repeat the following steps.
+
+For each survey taken by an observation, in other words, for each entry in the EMA dataset, we count the number of button presses by that observation k hours before and after the survey respectively.
+
+Since there were surveys taken through out a day and the closest 2 surveys taken by the same observation were within 1 hour, as long as we set the length of the time interval $k>1$, chances are that there could be presses falling in time intervals of more than 1 survey. Here for those presses, we count it in the time interval of its  closest survey. 
+
+For instance, if $k = 2$ and a press by observation X was 1 hour before a survey A that X took, 1.5 hours after another survey B that X took, we count the press as it was in the time interval before survey A.
+
+Besides, the suicidal score is missing only in 3 surveys, we simply delete those 3 entries.
+
+Thus there are 963 entries and (4+2m) variables in the bp_ema dataset :
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c}
+\hline
+Variable name & Description                                      \\ \hline \hline
+ID            & The identification number of the observation      \\ \hline
+timestamp     & The date and time when the survey was taken       \\ \hline
+run.time      & The participant duration of the observation until this survey \\ \hline
+si-score      & The score of suicidal risk measured by the  survey \\ \hline
+pre-press-k     & The number of of button presses k hours before the survey \\ \hline
+post-press-k    & The number of of button presses k hours after the survey  \\ \hline
+\end{tabular}
+\caption{Variables in the "EMA with press" data}
+\label{table3}
+\end{table}
+
+
+\newpage
+# Data analysis
+
+## Exploratory data analysis
+
+### Count of presses
+
+Although we choose a relatively large time window in order to get enough presses around each survey, there are still more than 800 entries without any presses before or after that survey, which could conceal the differences in other entries. So we first ignore those entries and consider the remaining 137 entries.
+
+
+For time windows k = 0.5, 1, 2, 3, 5, comparing pre-presses and post-presses, as is shown in Figure 1, we find that the median of post-presses is larger than that of pre-presses for k = 3, 5. Thus it seems that there tend to be more post-presses than pre-presses.
+
+\begin{figure}[h]
+\label{fig:1}
+\centering
+\includegraphics[width=4.5in]{./figure/boxplot_for_windows.png}
+\caption{Pre-presses and Post-presses for different time windows}
+\end{figure}
+
+
+### SI score and the difference of presses
+
+Then we expect that the suicidal score (SI score) would affect the difference of post-presses and pre-presses. 
+
+The SI scores are integers in [0, 27], where higher SI scores reflect higher suicidal tendency.
+
+\begin{figure}[h]
+\label{fig:2}
+\centering
+\includegraphics[width=6in, height=4in]{./figure/hist.png}
+\caption{Distribution of the SI score}
+\end{figure}
+
+As is shown in Figure 2,  the scores are naturally separated by 4 and 17. So we separate the data to 3 subsets where their SI scores lie in  [0, 3], [4, 16], [17, 27] respectively and compare pre-presses and post-presse for each subset with k = 3. The result is shown in Figure 3 and Table 4.
+
+
+\begin{figure}[h]
+\label{fig:3}
+\centering
+\includegraphics[width=7in, height=4in]{./figure/box_si_3.png}
+\caption{Post-presses and Pre-presses in subsets by SI score}
+\end{figure}
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+SI score     & Entries & Mean pre-presses & Mean post-presses & p value (paired) & p value (2 sample) \\ \hline \hline
+{[}0, 3{]}   & 21      & 0.62             & 0.52              & 0.70             & 0.61               \\ \hline
+{[}4, 16{]}  & 86      & 0.88             & 1.08              & 0.47             & 0.43               \\ \hline
+{[}17, 27{]} & 30      & 0.83             & 1.47              & 0.15             & 0.10                \\ \hline
+\end{tabular}
+\caption{Compare presses in subsets by SI score}
+\label{table4}
+\end{table}
+
+We can see that pre-presses and post-presses are similar in the first subset since here observations have smaller SI scores and hardly press the button. As the SI score grows, the difference becomes more significant and when SI score exceeds 17, the difference is more significant than that in the whole dataset.
+
+
+\clearpage
+## Model fitting
+This section is accomplished with time window k = 3. Situations with other time windows are shown in the next section.
+
+Fit the following 3 kinds of Poisson regression models :
+
+(1) M1 (without SI covariate): $log(\lambda) = \beta_{0} + \beta_{1} 1_{\{k=1\}}$ , \newline
+(2) M2 (linear SI covariate): $log(\lambda) = \beta_{0} + \beta_{1}\times 1_{\{K=1\}} + \beta_{2} \times SI +  \beta_{3} \times SI \times 1_{\{k=1\}}$, \newline
+(3) M3 (B-splined SI covariate): $log(\lambda) \sim 1_{\{K=1\}} + bs(SI) + 1_{\{K=1\}}:bs(SI)$, \newline
+
+where ":" means an interaction term, $\lambda$ is the expectation of the times of presses and $1_{\{K=1\}}$ is an indicate term of whether is is a post-survey count. 
+
+Then test whether parameters corresponding to $1_{\{K=1\}}$ are significantly non-zero.
+
+In Model 1, we refuse $\beta_1 = 0$ thus there is significant difference between pre-presses and post-presses if an observation has non-zero button presses around a survey.
+
+In Model 2 and Model 3, some parameters corresponding to the interaction of SI and $1_{\{k=1\}}$ are significantly non-zero. The curves of the presses with respect to the SI score is shown in Figure 4. \newline
+
+\begin{figure}[h]
+\label{fig:4}
+\centering
+\includegraphics[width=8in, height=4in]{./figure/model_curve.png}
+\caption{Model curve for k=3}
+\end{figure}
+
+We can see from the figure that there is significant difference between pre-presses and post-presses when SI score exceeds 13.
+
+# Sensitivity analyses
+
+Fit the 3 models in Section 3 with k = 0.5, 1, 2, 5.
+
+For situations where $k<3$, we cannot refuse the null hypothesis in the tests with form "$H_0: \beta = 0 \quad v.s. \quad H_1: \beta \neq 0$", where $\beta$ is any parameter corresponding to $1_{\{k=1\}}$. This may becasue in such short time window, there are hardly any presses in each entry and thus there aren't enough samples for a model. \newline
+
+
+For $k=5$, some parameters corresponding to the interaction of SI and $1_{\{k=1\}}$ are significantly non-zero. The curves of the presses with respect to the SI score is shown in Figure 5. \newline
+
+\begin{figure}[h]
+\label{fig:5}
+\centering
+\includegraphics[width=8in, height=4in]{./figure/model_curve_5.png}
+\caption{Model curve for k=5}
+\end{figure}
+
+
+The result is similar with that for k = 3 only the lower limit of SI score above which there is significant difference between pre-presses and post-presses is smaller.\newline 
