@@ -29,33 +29,61 @@ m1.3 = glm(k.3 ~ post, data = bp_ema_long, family = "poisson")
 summary(m1.3)
 
 
-# m2: with si_score -- truncate
-truncateSI = function(si){
-  result = 1*(0<=si & si<=3) +
-    2*(4<=si & si<=16) +
-    3*(17<=si & si<=27)
-  return(as.factor(result))
-}
-m2.3 = glm(k.3 ~ post*truncateSI(si_score), data = bp_ema_long, family = "poisson")
+# m2: with si_score -- linear
+m2.3 = glm(k.3 ~ post*si_score, data = bp_ema_long, family = "poisson")
 summary(m2.3)
 
+post2.3 = predict(m2.3, data.frame(si_score = 0:27, post = 1), type = "response", se.fit = TRUE)
+pre2.3 = predict(m2.3, data.frame(si_score = 0:27, post = 0), type = "response", se.fit = TRUE)
 
-# m3: with si_score -- linear
-m3.3 = glm(k.3 ~ post*si_score, data = bp_ema_long, family = "poisson")
+(post2.3$fit - 1.96 * post2.3$se.fit) - (pre2.3$fit + 1.96 * pre2.3$se.fit)
+
+plot(0:27, post2.3$fit,type = "l", axes = FALSE, ylab = "Expect time of presses", xlab = "SI score", 
+     main = "Linear (SI score in the model)") 
+points(0:27, post2.3$fit + 1.96 * post2.3$se.fit,  type = "l", lty = 2)
+points(0:27, post2.3$fit - 1.96 * post2.3$se.fit, type = "l", lty = 2)
+points(0:27, pre2.3$fit,  col = "red", type = "l")
+points(0:27, pre2.3$fit + 1.96 * pre2.3$se.fit, col = "red", type = "l", lty = 2)
+points(0:27, pre2.3$fit - 1.96 * pre2.3$se.fit, col = "red", type = "l", lty = 2)
+legend(1, 1, legend=c("post", "pre"),
+       col=c("black", "red"), lty=1, cex=0.8)
+abline(v = 13, col = "gray")
+text(x = 11.5, y = 0.03, labels = "SI = 13", col = "gray", cex=0.6)
+abline(v = 14, col = "gray")
+text(x = 15.5, y = 0.03, labels = "SI = 14", col = "gray", cex=0.6)
+axis(side = 1)
+axis(side = 2)
+
+
+# m3: with si_score -- B-spline
+library(splines)
+m3.3 = glm(k.3 ~ post*bs(si_score, df = 3), data = bp_ema_long, family = "poisson")
 summary(m3.3)
 
+post3.3 = predict(m3.3, data.frame(si_score = 0:27, post = 1), type = "response", se.fit = TRUE)
+pre3.3 = predict(m3.3, data.frame(si_score = 0:27, post = 0), type = "response", se.fit = TRUE)
 
-# m4: with si_score -- quadratic
-quadraticSI = function(si){return(si^2)}
-m4.3 = glm(k.3 ~ post*si_score + post*quadraticSI(si_score), data = bp_ema_long, family = "poisson")
-summary(m4.3)
+(post5.3$fit - 1.96 * post5.3$se.fit) - (pre5.3$fit + 1.96 * pre5.3$se.fit)
 
-
-# m5: with si_score -- B-spline
-library(splines)
-m5.3 = glm(k.3 ~ post*bs(si_score, df = 3), data = bp_ema_long, family = "poisson")
-summary(m5.3)
-
+plot(0:27, post3.3$fit,type = "l", axes = FALSE, ylab = "Expect time of presses", xlab = "SI score", 
+     main = "B spline (SI score in the model)", xlim = c(0, 28)) 
+points(0:27, post3.3$fit + 1.96 * post3.3$se.fit,  type = "l", lty = 2)
+points(0:27, post3.3$fit - 1.96 * post3.3$se.fit, type = "l", lty = 2)
+points(0:27, pre3.3$fit,  col = "red", type = "l")
+points(0:27, pre3.3$fit + 1.96 * pre3.3$se.fit, col = "red", type = "l", lty = 2)
+points(0:27, pre3.3$fit - 1.96 * pre3.3$se.fit, col = "red", type = "l", lty = 2)
+legend(1, 0.8, legend=c("post", "pre"),
+       col=c("black", "red"), lty=1, cex=0.8)
+abline(v = 13, col = "gray")
+text(x = 11.5, y = 0.03, labels = "SI = 13", col = "gray", cex=0.6)
+abline(v = 14, col = "gray")
+text(x = 15.5, y = 0.03, labels = "SI = 14", col = "gray", cex=0.6)
+abline(v = 25, col = "gray")
+text(x = 23.5, y = 0.03, labels = "SI = 25", col = "gray", cex=0.6)
+abline(v = 26, col = "gray")
+text(x = 27.5, y = 0.03, labels = "SI = 26", col = "gray", cex=0.6)
+axis(side = 1)
+axis(side = 2)
 
 
 
