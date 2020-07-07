@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo=FALSE, warning=FALSE)
 
 # Data description
 
-This project is based on an experiment containing 2 datasets, the BP dataset and the EMA dataset.
+This project is based on an experiment containing 2 datasets. The first is a button press (WD). the BP dataset and the EMA dataset.
 
 On one hand, each observation was provided with a device and was supposed to press the button on it when feeling stressful or having suicidal tendency.  On the other hand, during the experiment, each observation received surveys for testing their suicidal tendency several times a day and might choose to finish some of them.
 
