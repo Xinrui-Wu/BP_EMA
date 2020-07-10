@@ -197,13 +197,21 @@ We can see from the figure that there is significant difference between pre-pres
 
 Fit the 3 models in Section 3 with k = 0.5, 1, 2, 5.
 
-For situations where $k<3$, we cannot refuse the null hypothesis in the tests with form "$H_0: \beta = 0 \quad v.s. \quad H_1: \beta \neq 0$", where $\beta$ is any parameter corresponding to $1_{\{k=1\}}$. This may becasue in such short time window, there are hardly any presses in each entry and thus there aren't enough samples for a model. \newline
-
-
-For $k=5$, some parameters corresponding to the interaction of SI and $1_{\{k=1\}}$ are significantly non-zero. The curves of the presses with respect to the SI score is shown in Figure 5. \newline
+## $k<3$
+For situations where $k<3$, we cannot refuse the null hypothesis in the tests with form "$H_0: \beta = 0 \quad v.s. \quad H_1: \beta \neq 0$", where $\beta$ is any parameter corresponding to $1_{\{k=1\}}$. And the curves of the presses with respect to the SI score in Figure 5 also shows that we cannot distinguish pre-presses and post-presses significantly. This may becasue in such short time window, there are hardly any presses in each entry and thus there aren't enough samples for a model. \newline
 
 \begin{figure}[h]
 \label{fig:5}
+\centering
+\includegraphics[width=8in, height=4in]{./figure/model_curve_1.png}
+\caption{Model curve for k=1}
+\end{figure}
+
+## $k>3$
+For $k=5$, some parameters corresponding to the interaction of SI and $1_{\{k=1\}}$ are significantly non-zero. The curves of the presses with respect to the SI score is shown in Figure 6. \newline
+
+\begin{figure}[h]
+\label{fig:6}
 \centering
 \includegraphics[width=8in, height=4in]{./figure/model_curve_5.png}
 \caption{Model curve for k=5}
@@ -211,3 +219,4 @@ For $k=5$, some parameters corresponding to the interaction of SI and $1_{\{k=1\
 
 
 The result is similar with that for k = 3 only the lower limit of SI score above which there is significant difference between pre-presses and post-presses is smaller.\newline 
+
