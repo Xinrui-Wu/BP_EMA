@@ -1,7 +1,7 @@
 ---
-title: "Proposal Draft"
-author: "Xinrui Wu"
-date: "6/29/2020"
+title: "Towards understanding the impact of self report prompts to measure suicidal ideation on self-identification of suicidal distress"
+author: "Xinrui Wu and Walter Dempsey"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
   pdf_document:
     fig_caption: yes
@@ -20,37 +20,34 @@ knitr::opts_chunk$set(echo=FALSE, warning=FALSE)
 
 # Data description
 
-This project is based on an experiment containing 2 datasets. The first is a button press (WD). the BP dataset and the EMA dataset.
+Here we describe two data streams used in our exploratory data analysis that were collected as part of an observational in-patient study of individuals at elevated risk of Suicidal Thoughts and Behaviors (STBs).  Each recruited patient was provided with a wearable, wrist-worn device (Empatica E4) and asked to press a button on the device at self-identified moments of suicidal distress.  During the study, each recruited patient also received survey prompts for measuring suicidal ideation at several random times a day.  
 
-On one hand, each observation was provided with a device and was supposed to press the button on it when feeling stressful or having suicidal tendency.  On the other hand, during the experiment, each observation received surveys for testing their suicidal tendency several times a day and might choose to finish some of them.
-
-The BP dataset contains when observations pressed the button and their duration of participation in the experiment.  Each entry in the data explains the messages of one press of an observation and there are 3 variables in the data :
+The first data stream (i.e., the "BP dataset") contains a unique identification number, a timestamp of the button press, and time since recruitment (runtime) for the button press. 
 
 \begin{table}[h]
 \centering
 \begin{tabular}{c|c}
 \hline
 Variable name & Description                                      \\ \hline \hline
-ID            & The identification number of the observation     \\ \hline
-timestamp     & The date and time of the press                   \\ \hline
-run.time      & The participant duration of the observation until this press \\ \hline
+ID            & Patient identification number     \\ \hline
+timestamp     & The date and time of the button press                   \\ \hline
+run.time      & Time-in-study until button press \\ \hline
 \end{tabular}
 \caption{Variables in the BP data}
 \label{table1}
 \end{table}
 
-
-The EMA dataset shows the answers and the messages of the surveys taken by observations. Each entry in the data represents one survey information and we will be using 4 variables in the data:
+The second data stream (i.e., the "EMA dataset") contains a unique identifier, a timestamp of the survey prompt, time since recruitment for the button press, and the sum score built from the suvrey prompt responses to suicidal ideation questions (desire, intent, and resist urge).  the answers and the messages of the surveys taken by observations. 
 
 \begin{table}[h]
 \centering
 \begin{tabular}{c|c}
 \hline
 Variable name & Description                                      \\ \hline \hline
-ID            & The identification number of the observation      \\ \hline
-timestamp     & The date and time when the survey was taken       \\ \hline
-run.time      & The participant duration of the observation until this survey \\ \hline
-sitb si sum   & The score of suicidal risk measured by the  survey \\ \hline
+ID            & Patient identification number       \\ \hline
+timestamp     & The date and time when the survey prompt was delivered       \\ \hline
+run.time      & Time-in-study until survey prompt was delivered \\ \hline
+sitb si sum   & Sum score of suicidal ideation as measured by survey \\ \hline
 \end{tabular}
 \caption{Variables in the EMA data}
 \label{table2}
