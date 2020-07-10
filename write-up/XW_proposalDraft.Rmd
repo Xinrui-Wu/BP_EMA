@@ -72,17 +72,14 @@ We propose to leverage ideas from regression discontinuity design to propose the
 
 To answer this problem, we have cleaned the data streams and constructed a new dataset “bp_ema” in the following steps. Note, the data cleaning process can be replicated by using the functions in the [data cleaning files](https://github.com/Xinrui-Wu/BP_EMA/blob/master/methods/dataManipulation.R) in our github repository.
 
-First, we set a vector of m time windows. For each time window k, repeat the following steps.
+First, we ask the user to specify a list of $m$ time windows (e.g., 1,3,5 hours). For each time window $\Delta$ in this list, we take the following steps:
 
-For each survey taken by an observation, in other words, for each entry in the EMA dataset, we count the number of button presses by that observation k hours before and after the survey respectively.
+1. For each survey prompt, i.e., for each row in the EMA dataset, we count the number of button presses that are measured both $\Delta$ hours _before_ and _after_ the survey prompt delivery time respectively.
+2. Survey prompts are delivered throughout the day.  The closest 2 delivery times for an individual were within 1 hour.  Therefore, as long as we set the length of the time interval $\Delta>1$, there is a non-negligible chance that there could be button presses falling in these time windows for more than 1 survey prompt. For those presses, we count the button press in the time interval of its closest survey.
+  * For instance, if $\Delta = 2$ and a button press by survey prompt X was 1 hour before a survey A that X took, 1.5 hours after another survey B that X took, we count the press as it was in the time interval before survey A.
+3.  We deleted 3 rows of the EMA dataset where SI score is missing.
 
-Since there were surveys taken through out a day and the closest 2 surveys taken by the same observation were within 1 hour, as long as we set the length of the time interval $k>1$, chances are that there could be presses falling in time intervals of more than 1 survey. Here for those presses, we count it in the time interval of its  closest survey. 
-
-For instance, if $k = 2$ and a press by observation X was 1 hour before a survey A that X took, 1.5 hours after another survey B that X took, we count the press as it was in the time interval before survey A.
-
-Besides, the suicidal score is missing only in 3 surveys, we simply delete those 3 entries.
-
-Thus there are 963 entries and (4+2m) variables in the bp_ema dataset :
+Applying this procedure, there are 963 entries and (4+2m) variables in the bp_ema dataset :
 
 
 \begin{table}[h]
