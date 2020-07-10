@@ -1,5 +1,5 @@
 ---
-title: "Towards understanding the impact of self report prompts to measure suicidal ideation on self-identification of suicidal distress"
+title: "The impact of self report prompts to measure suicidal ideation on future  self-identification of suicidal distress"
 author: "Xinrui Wu and Walter Dempsey"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
@@ -38,7 +38,7 @@ run.time      & Time-in-study until button press \\ \hline
 \label{table1}
 \end{table}
 
-The second data stream (i.e., the "EMA dataset") contains a unique identifier, a timestamp of the survey prompt, time since recruitment for the button press, and the sum score built from the suvrey prompt responses to suicidal ideation questions (desire, intent, and resist urge).  the answers and the messages of the surveys taken by observations. 
+The second data stream (i.e., the "EMA dataset") contains a unique identifier, a timestamp of the survey prompt, time since recruitment for the survey prompt, and the sum score built from the survey prompt responses to suicidal ideation questions (desire, intent, and resist urge).  
 
 \begin{table}[h]
 \centering
@@ -59,13 +59,13 @@ sitb si sum   & Sum score of suicidal ideation as measured by survey \\ \hline
 
 ## Main purpose
 
-The motivating question behind this exploratory data analysis is to assess whether survey prompts that ask about current level of suicidal ideation may act as a potential reminder and therefore increase button presses in the near future.  To answer this question, in this report we test whether individuals number of button presses increased after a survey prompt when compared to before one.
+The motivating question behind this exploratory data analysis is to assess whether survey prompts that ask about current level of suicidal ideation may act as a potential reminder and therefore increase button presses in the near future.  To answer this question, we test whether the number of button presses in a pre-specified time window increased after a prompt when compared to a similar length time window before the prompt.
 
-Mathematically, let $t$ denote time in study where $t=0$ is time of recruitment.  In an ideal world, the researcher would be able to passively measure the suicidal ideation (SI) score ($X_t$) at every time $t>0$ without interacting with the patient.  Suicide researchers are interested in understanding whether heightened levels of suicidal ideation leads to increased moments of suicidal distress.  One way to quantify this concept, is to look at the number of button presses in a future time window.  That is, let $Y_{t, \Delta}$ denote the number of button presses in a time window $\Delta$ after time $t$.  For example, $Y_{t,3}$ is the number of button presses in the 3-hours following time $t$. Then the quantity of interest is the average number of button presses in the next $\Delta$ time units given the individual is has SI score equal to $x$ at time $t$, i.e., $E \left[ Y_{t,\Delta} \mid X_t = x \right]$.  
+Mathematically, let $t$ denote time in study where $t=0$ is time of recruitment.  In an ideal world, the researcher would be able to passively measure the suicidal ideation (SI) score ($X_t$) at every time $t>0$ without interacting with the patient.  Suicide researchers are interested in understanding whether heightened levels of suicidal ideation leads to increased moments of suicidal distress.  One way to quantify this concept, is to look at the number of button presses in a future time window.  That is, let $Y_{t, \Delta}$ denote the number of button presses in a time window $\Delta$ after time $t$.  For example, $Y_{5.5,3}$ is the number of button presses in the 3-hours after $t=5.5$ hours into the study. Then the quantity of interest is the average number of button presses in the next $\Delta$ time units given the individual has SI score equal to $x$ at time $t$, i.e., $E \left[ Y_{t,\Delta} \mid X_t = x \right]$.  
 
 The key issue is that the SI score is not passively available at every $t$; instead, researchers must deliver survey prompts to the individual to measure their SI score.  However, survey prompts may act as a reminder.  For example, an individual with a high SI score at the time of prompt delivery may then reflect on their response to the survey and thus increase their button presses in the near future.  In this case, if an individual received a prompt at time $t$, then $Y_{t,\Delta}$ will be inflated by delivery of the survey prompt.  
 
-We propose to leverage ideas from regression discontinuity design to propose the use of the $\Delta$ time units prior to time $t$ as a proxy for the number of button presses in the $\Delta$ time units after time $t$ that do not include the prompt delivery effect.  Mathematically, define $Y_{t,-\Delta}$ to denote the number of button presses in a time window $\Delta$ prior to time $t$. In this way, by modeling the difference between the number of presses before and after delivery of a survey prompt, we hope to model the causal effect of the treatment (i.e., survey prompt delivery) and thus estimate the quantity of interest.  In this report, we avoided formally defining the effect of interest using causal inference notation; however, future methodological work will include formal causal definitions, discussions of identifiability, and proposed estimation procedures based on regression discontinuity design techniques.
+We propose to leverage ideas from regression discontinuity design to propose the use of the $\Delta$ time units prior to time $t$ as a proxy for the number of button presses in the $\Delta$ time units after time $t$ that do not include the prompt delivery effect.  Mathematically, define $Y_{t,-\Delta}$ to denote the number of button presses in a time window $\Delta$ prior to time $t$. In this way, by modeling the difference between the number of presses before and after delivery of a survey prompt, we hope to model the causal effect of the treatment (i.e., survey prompt delivery) and thus estimate the quantity of interest.  In this report, we have avoided formally defining the effect of interest using causal inference notation; however, future methodological work will include formal causal definitions, discussions of identifiability, and a more nuanced estimation procedure based on regression discontinuity design techniques.
 
 
 ## Data cleaning
