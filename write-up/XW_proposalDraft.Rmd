@@ -76,8 +76,10 @@ First, we ask the user to specify a list of $m$ time windows (e.g., 1,3,5 hours)
 
 1. For each survey prompt, i.e., for each row in the EMA dataset, we count the number of button presses that are measured both $\Delta$ hours _before_ and _after_ the survey prompt delivery time respectively.
 2. Survey prompts are delivered throughout the day.  The closest 2 delivery times for an individual were within 1 hour.  Therefore, as long as we set the length of the time interval $\Delta>1$, there is a non-negligible chance that there could be button presses falling in these time windows for more than 1 survey prompt. For those presses, we count the button press in the time interval of its closest survey.
-  * For instance, if $\Delta = 2$ and a button press by survey prompt X was 1 hour before a survey A that X took, 1.5 hours after another survey B that X took, we count the press as it was in the time interval before survey A.
+  * For instance, if $\Delta = 2$ and a button press occurs 1 hour before a survey prompt A and 1.5 hours after another survey prompt B, then we count the button press towards the counts _before_ survey A.
+  * Future work will be investigating sensitivy of the below results to this decision.
 3.  We deleted 3 rows of the EMA dataset where SI score is missing.
+
 
 Applying this procedure, there are 963 entries and (4+2m) variables in the bp_ema dataset :
 
@@ -106,10 +108,9 @@ post-press-k    & The number of of button presses k hours after the survey  \\ \
 
 ### Count of presses
 
-Although we choose a relatively large time window in order to get enough presses around each survey, there are still more than 800 entries without any presses before or after that survey, which could conceal the differences in other entries. So we first ignore those entries and consider the remaining 137 entries.
+Note that the number of button presses per user-day is quite low.  The median and mean number of button presses across user-days is 2.0 and 3.423 respectively. Because of this, we choose a relatively large time window in order to get enough presses around each survey.  Even with these choices, there are still more than 800 entries without any presses before or after that survey, which may conceal the differences when there are non-zero entires.  Therefore, we first ignore these entries and consider the remaining 137 entries where either pre- or post- have non-zero counts.
 
-
-For time windows k = 0.5, 1, 2, 3, 5, comparing pre-presses and post-presses, as is shown in Figure 1, we find that the median of post-presses is larger than that of pre-presses for k = 3, 5. Thus it seems that there tend to be more post-presses than pre-presses.
+For time windows $\Delta = 0.5, 1, 2, 3, 5$, comparing pre-presses and post-presses, as is shown in Figure 1, we find that the median of post-presses is larger than that of pre-presses for k = 3 and 5. This provides some evidence that there tend to be more button presses in the hours after survey prompts than before.
 
 \begin{figure}[h]
 \label{fig:1}
@@ -121,9 +122,7 @@ For time windows k = 0.5, 1, 2, 3, 5, comparing pre-presses and post-presses, as
 
 ### SI score and the difference of presses
 
-Then we expect that the suicidal score (SI score) would affect the difference of post-presses and pre-presses. 
-
-The SI scores are integers in [0, 27], where higher SI scores reflect higher suicidal tendency.
+We expect the suicidal ideation score to affect the difference between the number of button presses prior to and after the survey prompt.  Our hypothesis was that high suicidal ideation implies higher likelihood of moments of suicidal distress.  Therefore, prompts may also have a larger impact on the button presses. The SI scores are integers in [0, 27], where higher SI scores reflect higher suicidal tendency.
 
 \begin{figure}[h]
 \label{fig:2}
@@ -132,7 +131,7 @@ The SI scores are integers in [0, 27], where higher SI scores reflect higher sui
 \caption{Distribution of the SI score}
 \end{figure}
 
-As is shown in Figure 2,  the scores are naturally separated by 4 and 17. So we separate the data to 3 subsets where their SI scores lie in  [0, 3], [4, 16], [17, 27] respectively and compare pre-presses and post-presse for each subset with k = 3. The result is shown in Figure 3 and Table 4.
+As is shown in Figure 2,  the scores are naturally separated by 4 and 17. So we separate the data to 3 subsets where their SI scores lie in  [0, 3], [4, 16], [17, 27] respectively and compare pre- and post-prompt button presses for each subset with k = 3. The result is shown in Figure 3 and Table 4.
 
 
 \begin{figure}[h]
@@ -156,24 +155,21 @@ SI score     & Entries & Mean pre-presses & Mean post-presses & p value (paired)
 \label{table4}
 \end{table}
 
-We can see that pre-presses and post-presses are similar in the first subset since here observations have smaller SI scores and hardly press the button. As the SI score grows, the difference becomes more significant and when SI score exceeds 17, the difference is more significant than that in the whole dataset.
+We can see that pre- and post-prompt button presses are similar in the first subset since here observations have smaller SI scores and hardly press the button. As the SI score grows, the difference becomes more significant and when SI score exceeds 17, the difference is more significant than that in the whole dataset.
 
 
 \clearpage
 ## Model fitting
-This section is accomplished with time window k = 3. Situations with other time windows are shown in the next section.
 
-Fit the following 3 kinds of Poisson regression models :
+In this section, we set the time window to $\Delta = 3$ hours. Model fits for other time windows are shown in the next section. Let $k$ be a binary indicator that denotes pre- ($k=0$) and post-promt ($k=1$) button press windows respectively.  We fit the following 3 Poisson regression models.  
 
-(1) M1 (without SI covariate): $log(\lambda) = \beta_{0} + \beta_{1} 1_{\{k=1\}}$ , \newline
-(2) M2 (linear SI covariate): $log(\lambda) = \beta_{0} + \beta_{1}\times 1_{\{K=1\}} + \beta_{2} \times SI +  \beta_{3} \times SI \times 1_{\{k=1\}}$, \newline
-(3) M3 (B-splined SI covariate): $log(\lambda) \sim 1_{\{K=1\}} + bs(SI) + 1_{\{K=1\}}:bs(SI)$, \newline
+1. Model 1 (without SI covariate): $log(\lambda) = \beta_{0} + \beta_{1} 1_{\{k=1\}}$,
+2. Model 2 (linear SI covariate): $log(\lambda) = \beta_{0} + \beta_{1}\times 1_{\{k=1\}} + \beta_{2} \times SI +  \beta_{3} \times SI \times 1_{\{k=1\}}$,
+3. Model 3 (B-splined SI covariate): $log(\lambda) \sim 1_{\{k=1\}} + bs(SI) + 1_{\{k=1\}}:bs(SI)$,
 
-where ":" means an interaction term, $\lambda$ is the expectation of the times of presses and $1_{\{K=1\}}$ is an indicate term of whether is is a post-survey count. 
+where ":" means an interaction term, $\lambda$ is the rate parameter for the button press counts and $1_{\{k=1\}}$ is an indicator for a post-survey button press count. We are then interested in testing whether parameters interacting with $1_{\{k=1\}}$ are non-zero.
 
-Then test whether parameters corresponding to $1_{\{K=1\}}$ are significantly non-zero.
-
-In Model 1, we refuse $\beta_1 = 0$ thus there is significant difference between pre-presses and post-presses if an observation has non-zero button presses around a survey.
+In Model 1, we reject the null hypothesis that $\beta_1 = 0$.  Therefore, we find a significant difference between pre- and post-presses if an observation has non-zero button presses around a survey.
 
 In Model 2 and Model 3, some parameters corresponding to the interaction of SI and $1_{\{k=1\}}$ are significantly non-zero. The curves of the presses with respect to the SI score is shown in Figure 4. \newline
 
@@ -188,10 +184,8 @@ We can see from the figure that there is significant difference between pre-pres
 
 # Sensitivity analyses
 
-Fit the 3 models in Section 3 with k = 0.5, 1, 2, 5.
-
 ## $k<3$
-For situations where $k<3$, we cannot refuse the null hypothesis in the tests with form "$H_0: \beta = 0 \quad v.s. \quad H_1: \beta \neq 0$", where $\beta$ is any parameter corresponding to $1_{\{k=1\}}$. And the curves of the presses with respect to the SI score in Figure 5 also shows that we cannot distinguish pre-presses and post-presses significantly. This may becasue in such short time window, there are hardly any presses in each entry and thus there aren't enough samples for a model. \newline
+For situations where $k<3$, we cannot refuse the null hypothesis in the tests with form "$H_0: \beta = 0 \quad v.s. \quad H_1: \beta \neq 0$", where $\beta$ is any parameter corresponding to $1_{\{k=1\}}$. And the curves of the presses with respect to the SI score in Figure 5 also shows that we cannot distinguish pre-presses and post-presses significantly. This may be due to the fact that for short time windows there are hardly any button presses in each entry and thus there is not enough data. \newline
 
 \begin{figure}[h]
 \label{fig:5}
