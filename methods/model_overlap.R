@@ -5,7 +5,7 @@
 
 
 ## data manipulation (overlap)
-source('./dataManu_sens.R')
+source('./dataManu_overlap.R')
 time.window = c(0.5, 1, 2, 3, 5)
 n_win = length(time.window)
 bp_ema_overlap = BPEMA_overlap(bh, blake, time.window)
