@@ -98,8 +98,8 @@ BPEMA = function(BP, EMA, time.win, returnPlot = 1){
     filter(ID %in% BP$ID)
   
   bp = BP %>%
-    transmute(ID = ID, timestamp = as.POSIXct(timestamp, tz = attr(ema$timestamp[1], 'tzone')), 
-              date = as.Date(timestamp, tz = attr(ema$timestamp[1], 'tzone')), 
+    transmute(ID = ID, timestamp = timestamp, 
+              date = as.Date(timestamp), 
               time_day = time_day, run.time = run.time)
   
   n_win = length(time.win)
