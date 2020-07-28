@@ -182,10 +182,13 @@ In Model 2 and Model 3, some parameters corresponding to the interaction of SI a
 
 We can see from the figure that there is significant difference between pre-presses and post-presses when SI score exceeds 13.
 
-# Sensitivity analyses
+# Sensitivity analysis
 
-## $k<3$
-For situations where $k<3$, we cannot refuse the null hypothesis in the tests with form "$H_0: \beta = 0 \quad v.s. \quad H_1: \beta \neq 0$", where $\beta$ is any parameter corresponding to $1_{\{k=1\}}$. And the curves of the presses with respect to the SI score in Figure 5 also shows that we cannot distinguish pre-presses and post-presses significantly. This may be due to the fact that for short time windows there are hardly any button presses in each entry and thus there is not enough data. \newline
+## Different time windows
+Fit the 3 models in Section 3 with k = 0.5, 1, 2, 5.
+
+### $k<3$
+For situations where $k<3$, we cannot refuse the null hypothesis in the tests with form "$H_0: \beta = 0 \quad v.s. \quad H_1: \beta \neq 0$", where $\beta$ is any parameter corresponding to $1_{\{k=1\}}$. And the curves of the presses with respect to the SI score in Figure 5 also shows that we cannot distinguish pre-presses and post-presses significantly. This may becasue in such short time window, there are hardly any presses in each entry and thus there aren't enough samples for a model. \newline
 
 \begin{figure}[h]
 \label{fig:5}
@@ -194,7 +197,7 @@ For situations where $k<3$, we cannot refuse the null hypothesis in the tests wi
 \caption{Model curve for k=1}
 \end{figure}
 
-## $k>3$
+### $k>3$
 For $k=5$, some parameters corresponding to the interaction of SI and $1_{\{k=1\}}$ are significantly non-zero. The curves of the presses with respect to the SI score is shown in Figure 6. \newline
 
 \begin{figure}[h]
@@ -207,3 +210,33 @@ For $k=5$, some parameters corresponding to the interaction of SI and $1_{\{k=1\
 
 The result is similar with that for k = 3 only the lower limit of SI score above which there is significant difference between pre-presses and post-presses is smaller.\newline 
 
+
+## Different data manipulation strategy: overlap counts 
+The above analysis are all based on the data cleaned as did in section 1.2, where each press will only be asigned to its closest survey with respect to time. In other words, each press will only be counted once.
+
+In this part, we will manipulate the data by simply counting the presses in the prior or post intervals for each survey, in which way each press can be counted for multiple times, and compare it to the data we used above with boxplot and Poisson regression models.
+
+From the boxplot of the raw distribution of the press count in Figure 7, we can see that there seems not to be a significant difference between the two data manipulation strategies.
+
+\begin{figure}[h]
+\label{fig:7}
+\centering
+\includegraphics[height=2.5in]{./figure/overlap.png}
+\caption{Non-overlap Count v.s. Overlap Count}
+\end{figure}
+
+However, when we fit the glm models with the overlap data (k = 3), we can see that the pre-presses and post-presses are harder to distinguish, especially for the B-spline model, maybe because some presses are counted more than once and in both pre-interval and post-interval so that there's less difference.
+
+\begin{figure}[h]
+\label{fig:8}
+\centering
+\includegraphics[height=2.5in]{./figure/model_curve.png}
+\caption{Model curve for k=3 (Non-overlap)}
+\end{figure}
+
+\begin{figure}[h]
+\label{fig:9}
+\centering
+\includegraphics[height=2.5in]{./figure/curve_3_overlap.png}
+\caption{Model curve for k=3 (Overlap)}
+\end{figure}
